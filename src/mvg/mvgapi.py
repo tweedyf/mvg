@@ -16,7 +16,7 @@ MVGAPI_DEFAULT_LIMIT = 10  # API defaults to 10, limits to 100
 class Base(Enum):
     """MVG APIs base URLs."""
 
-    FIB = "https://www.mvg.de/api/fib/v2"
+    FIB = "https://www.mvg.de/api/bgw-pt/v3"
     ZDM = "https://www.mvg.de/.rest/zdm"
 
 
