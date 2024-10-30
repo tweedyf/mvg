@@ -23,9 +23,8 @@ class Base(Enum):
 class Endpoint(Enum):
     """MVG API endpoints with URLs and arguments."""
 
-    FIB_LOCATION: tuple[str, list[str]] = ("/location", ["query"])
     FIB_NEARBY: tuple[str, list[str]] = ("/station/nearby", ["latitude", "longitude"])
-    FIB_DEPARTURE: tuple[str, list[str]] = ("/departure", ["globalId", "limit", "offsetInMinutes"])
+    FIB_DEPARTURE: tuple[str, list[str]] = ("/departures", ["globalId", "limit", "offsetInMinutes"])
     ZDM_STATION_IDS: tuple[str, list[str]] = ("/mvgStationGlobalIds", [])
     ZDM_STATIONS: tuple[str, list[str]] = ("/stations", [])
     ZDM_LINES: tuple[str, list[str]] = ("/lines", [])
@@ -207,9 +206,10 @@ class MvgApi:
         """
         query = query.strip()
         try:
-            args = dict.fromkeys(Endpoint.FIB_LOCATION.value[1])
+            args = dict.fromkeys(Endpoint.ZDM_STATIONS.value[1])
             args.update({"query": query.strip()})
-            result = await MvgApi.__api(Base.FIB, Endpoint.FIB_LOCATION, args)
+            result = await MvgApi.__api(Base.ZDM, Endpoint.ZDM_STATIONS, args)
+            result = [i for i in result if i['id'] == query]
             assert isinstance(result, list)
 
             # return None if result is empty
@@ -219,7 +219,7 @@ class MvgApi:
             # return name and place from first result if station id was provided
             if MvgApi.valid_station_id(query):
                 station = {
-                    "id": query.strip(),
+                    "id": result[0]["id"],
                     "name": result[0]["name"],
                     "place": result[0]["place"],
                     "latitude": result[0]["latitude"],
@@ -352,7 +352,7 @@ class MvgApi:
             raise ValueError("Invalid format of global staton id.")
 
         try:
-            args = dict.fromkeys(Endpoint.FIB_LOCATION.value[1])
+            args = dict.fromkeys(Endpoint.ZDM_STATIONS.value[1])
             args.update({"globalId": station_id, "offsetInMinutes": offset, "limit": limit})
             if transport_types is None:
                 transport_types = TransportType.all()
